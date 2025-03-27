@@ -174,7 +174,8 @@
         const translated = await translateToTurkish(data.text);
         document.getElementById("description").innerText = `📖 Açıklama (TR): ${translated}`;
       } catch (err) {
-        document.getElementById("sonuc").innerText = "❌ Hata oluştu.";
+        document.getElementById("sonuc").innerText = "📡 Şu anda sunucuya ulaşılamıyor. Lütfen daha sonra tekrar deneyin.";
+        document.getElementById("description").innerText = "⚠️ Geçici bilgi: 12 ay takvimdeki toplam aydır.";
       }
     }
 
