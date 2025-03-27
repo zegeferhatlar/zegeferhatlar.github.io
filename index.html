@@ -165,7 +165,7 @@
       document.getElementById("description").innerText = "";
 
       try {
-        const res = await fetch(`http://numbersapi.com/${sayi}/${tur}?json`);
+        const res = await fetch(`https://numbersapi.com/${sayi}/${tur}?json`);
         const data = await res.json();
 
         document.getElementById("sonuc").innerText = `📌 ${data.text}`;
