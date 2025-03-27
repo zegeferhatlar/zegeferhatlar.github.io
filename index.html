@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sayı Bilgisi – Paylaşım Menülü</title>
+  <style>
+    :root {
+      --renk-trivia: #f6e58d;
+      --renk-math: #74b9ff;
+      --renk-year: #dfe6e9;
+      --renk-date: #55efc4;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #c9d6ff);
+      text-align: center;
+      padding-top: 60px;
+      transition: background-color 0.5s, color 0.5s;
+    }
+    body.dark {
+      background: #121212;
+      color: white;
+    }
+    .kutu {
+      background-color: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: auto;
+      transition: background-color 0.5s, color 0.5s;
+    }
+    input, select {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00a8ff;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #007bbd;
+      transform: scale(1.05);
+    }
+    .buton-grubu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .buton-grubu div {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #sonuc {
+      margin-top: 25px;
+      font-size: 18px;
+      min-height: 40px;
+    }
+    #tur {
+      margin-top: 5px;
+      font-size: 15px;
+      color: #555;
+    }
+    #description {
+      margin-top: 10px;
+      font-style: italic;
+      color: #666;
+    }
+    body.dark #description {
+      color: #bbb;
+    }
+    .paylas-paneli {
+      margin-top: 10px;
+      display: none;
+    }
+    .paylas-paneli button {
+      background-color: #4cd137;
+      margin: 3px;
+    }
+    #favoriler {
+      margin-top: 30px;
+      background-color: rgba(255,255,255,0.7);
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="kutu" id="kutu">
+    <h1 id="baslik">🔢 Sayı Bilgisi Makinesi</h1>
+    <p>Bir sayı girin, bilgi alın ve paylaşın!</p>
+
+    <input type="text" id="sayi" placeholder="Örn: 42 veya 3/14 (tarih)">
+    <select id="secim">
+      <option value="trivia">İlginç Bilgi</option>
+      <option value="math">Matematiksel Bilgi</option>
+      <option value="year">Tarihi Yıl</option>
+      <option value="date">Tarihle İlgili Bilgi (Ay/Gün)</option>
+    </select>
+
+    <div class="buton-grubu">
+      <div>
+        <button onclick="sayiGetir()">🔎 Göster</button>
+        <button onclick="rastgeleSayi()">🎲 Rastgele</button>
+        <button onclick="kopyalaMetin()">📋 Kopyala</button>
+        <button onclick="sesliOku()">🔊 Oku</button>
+      </div>
+      <div>
+        <button onclick="karanlikModuDegistir()">🌓 Mod</button>
+        <button onclick="togglePaylasPanel()">📤 Paylaş</button>
+        <button onclick="dogruluguAra()">🔍 Kontrol Et</button>
+        <button onclick="favoriEkle()">⭐ Favori</button>
+      </div>
+    </div>
+
+    <div class="paylas-paneli" id="paylasPaneli">
+      <button onclick="paylasTwitter()">🐦 Twitter</button>
+      <button onclick="paylasWhatsapp()">📱 WhatsApp</button>
+    </div>
+
+    <div id="sonuc"></div>
+    <div id="tur"></div>
+    <div id="description"></div>
+
+    <div id="favoriler">
+      <h3>⭐ Favorilerim</h3>
+      <ul id="favoriListe"></ul>
+      <button onclick="favorileriTemizle()">🗑 Tüm Favorileri Temizle</button>
+    </div>
+  </div>
+
+  <script>
+    async function sayiGetir() {
+      let sayi = document.getElementById('sayi').value.trim();
+      const tur = document.getElementById('secim').value;
+
+      if (tur === 'date' && sayi === "") {
+        const ay = Math.floor(Math.random() * 12) + 1;
+        const gun = Math.floor(Math.random() * 28) + 1;
+        sayi = `${ay}/${gun}`;
+      } else if (sayi === "") {
+        alert("Lütfen bir sayı girin!");
+        return;
+      }
+
+      document.getElementById("sonuc").innerText = "⏳ Bilgi yükleniyor...";
+      document.getElementById("description").innerText = "";
+
+      try {
+        const res = await fetch(`http://numbersapi.com/${sayi}/${tur}?json`);
+        const data = await res.json();
+
+        document.getElementById("sonuc").innerText = `📌 ${data.text}`;
+        document.getElementById("tur").innerText = `📚 Tür: ${tur.toUpperCase()}`;
+
+        const translated = await translateToTurkish(data.text);
+        document.getElementById("description").innerText = `📖 Açıklama (TR): ${translated}`;
+      } catch (err) {
+        document.getElementById("sonuc").innerText = "❌ Hata oluştu.";
+      }
+    }
+
+    function rastgeleSayi() {
+      const tur = document.getElementById('secim').value;
+      let sayi;
+      if (tur === 'date') {
+        const ay = Math.floor(Math.random() * 12) + 1;
+        const gun = Math.floor(Math.random() * 28) + 1;
+        sayi = `${ay}/${gun}`;
+      } else {
+        sayi = Math.floor(Math.random() * 1000);
+      }
+      document.getElementById('sayi').value = sayi;
+      sayiGetir();
+    }
+
+    async function translateToTurkish(text) {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    }
+
+    function kopyalaMetin() {
+      const metin = document.getElementById("description").innerText;
+      if (metin) {
+        navigator.clipboard.writeText(metin);
+        alert("📋 Açıklama kopyalandı!");
+      }
+    }
+
+    function sesliOku() {
+      const metin = document.getElementById("description").innerText;
+      if (metin) {
+        const ses = new SpeechSynthesisUtterance(metin.replace("📖 Açıklama (TR):", ""));
+        ses.lang = 'tr-TR';
+        speechSynthesis.speak(ses);
+      }
+    }
+
+    function karanlikModuDegistir() {
+      document.body.classList.toggle("dark");
+    }
+
+    function togglePaylasPanel() {
+      const panel = document.getElementById("paylasPaneli");
+      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    }
+
+    function paylasTwitter() {
+      const metin = document.getElementById("description").innerText;
+      if (!metin) return alert("📭 Paylaşılacak açıklama yok.");
+      const text = encodeURIComponent("Bugün öğrendiğim: " + metin.replace("📖 Açıklama (TR):", "").trim());
+      window.open(`https://twitter.com/intent/tweet?text=${text}`);
+    }
+
+    function paylasWhatsapp() {
+      const metin = document.getElementById("description").innerText;
+      if (!metin) return alert("📭 Paylaşılacak açıklama yok.");
+      const text = encodeURIComponent("Bugün öğrendiğim: " + metin.replace("📖 Açıklama (TR):", "").trim());
+      window.open(`https://wa.me/?text=${text}`);
+    }
+
+    function dogruluguAra() {
+      const metin = document.getElementById("sonuc").innerText;
+      if (metin && metin !== "⏳ Bilgi yükleniyor...") {
+        const arama = metin.replace("📌", "").trim();
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(arama)}`);
+      } else {
+        alert("🔍 Aranacak bilgi bulunamadı.");
+      }
+    }
+
+    function favoriEkle() {
+      const metin = document.getElementById("description").innerText;
+      if (!metin) return alert("⭐ Kaydedilecek açıklama yok.");
+      let favoriler = JSON.parse(localStorage.getItem("favoriler")) || [];
+      favoriler.push(metin);
+      localStorage.setItem("favoriler", JSON.stringify(favoriler));
+      favorileriGoster();
+    }
+
+    function favorileriGoster() {
+      const liste = document.getElementById("favoriListe");
+      liste.innerHTML = "";
+      const favoriler = JSON.parse(localStorage.getItem("favoriler")) || [];
+      favoriler.forEach((f, i) => {
+        const li = document.createElement("li");
+        li.textContent = f;
+        const silBtn = document.createElement("button");
+        silBtn.textContent = "❌";
+        silBtn.style.marginLeft = "10px";
+        silBtn.onclick = function () {
+          favoriler.splice(i, 1);
+          localStorage.setItem("favoriler", JSON.stringify(favoriler));
+          favorileriGoster();
+        };
+        li.appendChild(silBtn);
+        liste.appendChild(li);
+      });
+    }
+
+    function favorileriTemizle() {
+      if (confirm("Tüm favorileri silmek istediğine emin misin?")) {
+        localStorage.removeItem("favoriler");
+        favorileriGoster();
+      }
+    }
+
+    window.onload = function () {
+      favorileriGoster();
+    };
+  </script>
+</body>
+</html>
