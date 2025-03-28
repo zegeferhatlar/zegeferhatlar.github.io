@@ -165,8 +165,11 @@
       document.getElementById("description").innerText = "";
 
       try {
-        const res = await fetch(`https://numbersapi.com/${sayi}/${tur}?json`);
-        const data = await res.json();
+        const apiUrl = `http://numbersapi.com/${sayi}/${tur}?json`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+        const res = await fetch(proxyUrl);
+        const wrappedData = await res.json();
+        const data = JSON.parse(wrappedData.contents);
 
         document.getElementById("sonuc").innerText = `📌 ${data.text}`;
         document.getElementById("tur").innerText = `📚 Tür: ${tur.toUpperCase()}`;
